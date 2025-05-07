@@ -117,6 +117,48 @@ class _ExampleMainWindowState extends State<_ExampleMainWindow>
             TextButton(
               onPressed: () async {
                 await screenRetriever.getAllDisplays().then((screens) async {
+                  print(screens);
+                  if (screens.length > 1) {
+                    // Get the second screen's bounds
+                    final secondScreen = screens[1];
+                    final window = await DesktopMultiWindow.createWindow(
+                      jsonEncode({
+                        'args1': 'Sub window',
+                        'args2': 100,
+                        'args3': true,
+                        'business': 'business_test',
+                      }),
+                    );
+                    window
+                      ..setFrame(
+                        secondScreen.visiblePosition! &
+                            secondScreen.visibleSize!,
+                      )
+                      ..setTitle('Second Monitor Window')
+                      ..show();
+                  } else {
+                    // Fallback if only one screen is available
+                    final window = await DesktopMultiWindow.createWindow(
+                      jsonEncode({
+                        'args1': 'Sub window',
+                        'args2': 100,
+                        'args3': true,
+                        'business': 'business_test',
+                      }),
+                    );
+                    window
+                      ..setFrame(const Offset(100, 100) & const Size(1280, 720))
+                      ..setTitle('Fallback Window')
+                      ..show();
+                  }
+                });
+              },
+              child: const Text('Open on Second Monitor'),
+            ),
+
+            TextButton(
+              onPressed: () async {
+                await screenRetriever.getAllDisplays().then((screens) async {
                   var monitor = screens[1];
                   final window = await DesktopMultiWindow.createWindow(
                     jsonEncode({
@@ -236,12 +278,6 @@ class _ExampleSubWindowState extends State<_ExampleSubWindow> {
         _controller.add(newData); // Add new data to the stream
       }
     });
-    SharedPrefsHelper().init();
-  }
-
-  Future<String?> _getValue() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('key');
   }
 
   @override
